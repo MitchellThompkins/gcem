@@ -55,7 +55,7 @@ noexcept
                          T(2432902008176640000) );
 }
 
-template<typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+template<typename T, typename enable_if<is_integral<T>::value>::type* = nullptr>
 constexpr
 T
 factorial_recur(const T x)
@@ -68,7 +68,7 @@ noexcept
                 x * factorial_recur(x - 1) );
 }
 
-template<typename T, typename std::enable_if<!std::is_integral<T>::value>::type* = nullptr>
+template<typename T, typename enable_if<!is_integral<T>::value>::type* = nullptr>
 constexpr
 T
 factorial_recur(const T x)
