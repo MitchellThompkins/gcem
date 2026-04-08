@@ -139,6 +139,9 @@ jobs:
           echo "Testing env.CXXT: ${{ env.CXXT }}"
           make
           ./run_tests
+          make clean
+          GCEM_TRAITS_FLAGS="-DGCEM_TRAITS_BUILTIN" make
+          ./run_tests
 
       - name: Coverage
         if: startsWith(matrix.config.build_type, 'Coverage')
