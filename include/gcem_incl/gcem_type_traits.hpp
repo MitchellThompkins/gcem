@@ -1,6 +1,6 @@
 /*################################################################################
   ##
-  ##   Copyright (C) 2016-2024 Keith O'Hara
+  ##   Copyright (C) 2016-2026 Keith O'Hara
   ##
   ##   This file is part of the GCE-Math C++ library.
   ##
@@ -87,7 +87,23 @@ namespace gcem
     template<typename T, typename F>
     struct conditional<true, T, F> { using type = T; };
 
+    // remove_reference / remove_cv / decay — needed to strip T&& from ternary results
+    template<typename T> struct remove_reference      { using type = T; };
+    template<typename T> struct remove_reference<T&>  { using type = T; };
+    template<typename T> struct remove_reference<T&&> { using type = T; };
+
+    template<typename T> struct remove_cv                   { using type = T; };
+    template<typename T> struct remove_cv<const T>          { using type = T; };
+    template<typename T> struct remove_cv<volatile T>       { using type = T; };
+    template<typename T> struct remove_cv<const volatile T> { using type = T; };
+
+    template<typename T>
+    struct decay {
+        using type = typename remove_cv<typename remove_reference<T>::type>::type;
+    };
+
     // common_type — variadic, peels one type at a time via ternary decay
+    // decay<> mirrors what std::common_type does: strips the && that declval introduces.
     template<typename... T> struct common_type;
 
     template<typename T>
@@ -95,13 +111,13 @@ namespace gcem
 
     template<typename T1, typename T2>
     struct common_type<T1, T2> {
-        using type = decltype(true ? declval<T1>() : declval<T2>());
+        using type = typename decay<decltype(true ? declval<T1>() : declval<T2>())>::type;
     };
 
     template<typename T1, typename T2, typename... Rest>
     struct common_type<T1, T2, Rest...> {
         using type = typename common_type<
-            decltype(true ? declval<T1>() : declval<T2>()), Rest...>::type;
+            typename decay<decltype(true ? declval<T1>() : declval<T2>())>::type, Rest...>::type;
     };
 
     // gcem_limits — floating-point specializations
