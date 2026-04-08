@@ -106,42 +106,16 @@ namespace gcem
 
     // gcem_limits — floating-point specializations
     //
-    // infinity() and quiet_NaN() follow the same pattern already used in gcem_options.hpp
-    // for GCEM_SIGNBIT / GCEM_COPYSIGN: __builtin_* for GCC/Clang, MSVC intrinsics otherwise.
-    //
+    // infinity() and quiet_NaN() use __builtin_* intrinsics, tested via __has_builtin.
     // min() and max() use compiler-predefined macros (__FLT_MIN__, __FLT_MAX__, etc.)
     // which expand to plain numeric literals — no function calls, no headers required.
+    //
+    // If your compiler lacks these builtins, use GCEM_TRAITS_CUSTOM instead.
 
     template<typename T>
     struct gcem_limits;
 
-#ifdef _MSC_VER
-
-    template<>
-    struct gcem_limits<float> {
-        static constexpr float infinity()  noexcept { return __builtin_huge_valf(); }
-        static constexpr float quiet_NaN() noexcept { return __builtin_nanf("");    }
-        static constexpr float min()       noexcept { return __FLT_MIN__;           }
-        static constexpr float max()       noexcept { return __FLT_MAX__;           }
-    };
-
-    template<>
-    struct gcem_limits<double> {
-        static constexpr double infinity()  noexcept { return __builtin_huge_val(); }
-        static constexpr double quiet_NaN() noexcept { return __builtin_nan("");    }
-        static constexpr double min()       noexcept { return __DBL_MIN__;          }
-        static constexpr double max()       noexcept { return __DBL_MAX__;          }
-    };
-
-    template<>
-    struct gcem_limits<long double> {
-        static constexpr long double infinity()  noexcept { return __builtin_huge_val();  }
-        static constexpr long double quiet_NaN() noexcept { return __builtin_nan("");     }
-        static constexpr long double min()       noexcept { return __DBL_MIN__;           }
-        static constexpr long double max()       noexcept { return __DBL_MAX__;           }
-    };
-
-#else  // GCC / Clang
+#if defined(__has_builtin) && __has_builtin(__builtin_huge_valf)
 
     template<>
     struct gcem_limits<float> {
@@ -167,6 +141,9 @@ namespace gcem
         static constexpr long double max()       noexcept { return __LDBL_MAX__;          }
     };
 
+#else
+    #error "GCEM_TRAITS_BUILTIN: compiler does not support __builtin_huge_valf. " \
+           "Use GCEM_TRAITS_CUSTOM and provide your own gcem_limits specializations."
 #endif
 
     // Integer specializations (min/max used by pow_integral.hpp)
