@@ -34,9 +34,13 @@ T
 mantissa(const T x)
 noexcept
 {
-    return( x < T(1) ? \
-                mantissa(x * T(10)) : 
-            x > T(10) ? \
+    // Mirror the one-epsilon tolerance used in find_exponent so that
+    // (mantissa(x), find_exponent(x)) stays a consistent decomposition of x.
+    return( x < T(1) - GCLIM<T>::epsilon() ? \
+                mantissa(x * T(10)) :
+            x < T(1) ? \
+                T(1) :
+            x >= T(10) ? \
                 mantissa(x / T(10)) :
             // else
                 x );

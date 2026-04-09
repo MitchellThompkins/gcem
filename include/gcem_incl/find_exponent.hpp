@@ -34,15 +34,21 @@ llint_t
 find_exponent(const T x, const llint_t exponent)
 noexcept
 {
+    // Subtract one epsilon from T(1) so that values whose x*10^n product lands
+    // within one epsilon below 1.0 (e.g. 0.001L in 80-bit, which rounds to
+    // ~0.5 eps below 1.0 after scaling by 1000) are not pushed into the wrong
+    // decade.  One epsilon is the unique correct choice: it must be > 0.5 eps
+    // to catch 0.001L, and < 1.5 eps to avoid misclassifying the next
+    // representable value below the boundary.
     return( // < 1
-            x < T(1e-03)  ? \
+            x * T(1000) < T(1) - GCLIM<T>::epsilon() ? \
                 find_exponent(x * T(1e+04), exponent - llint_t(4)) :
-            x < T(1e-01)  ? \
+            x * T(10) < T(1) - GCLIM<T>::epsilon() ? \
                 find_exponent(x * T(1e+02), exponent - llint_t(2)) :
-            x < T(1)  ? \
+            x < T(1) - GCLIM<T>::epsilon() ? \
                 find_exponent(x * T(10), exponent - llint_t(1)) :
             // > 10
-            x > T(10) ? \
+            x >= T(10) ? \
                 find_exponent(x / T(10), exponent + llint_t(1)) :
             x > T(1e+02) ? \
                 find_exponent(x / T(1e+02), exponent + llint_t(2)) :
@@ -51,6 +57,7 @@ noexcept
             // else
                 exponent );
 }
+
 
 }
 

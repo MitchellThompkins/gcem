@@ -1,6 +1,6 @@
 /*################################################################################
   ##
-  ##   Copyright (C) 2016-2024 Keith O'Hara
+  ##   Copyright (C) 2016-2026 Keith O'Hara
   ##
   ##   This file is part of the GCE-Math C++ library.
   ##
@@ -31,23 +31,25 @@ int main()
 
     //
 
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  0.5L);
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  0.00199900000000000208L);
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  1.0L);
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  1.5L);
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  41.5L);
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  123456789.5L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  0.001L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  0.1L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  0.5L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  0.00199900000000000208L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  1.0L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  1.5L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  41.5L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  123456789.5L);
 
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  0.0L);
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log, -1.0L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  0.0L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log, -1.0L);
 
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  1e-500L);
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  std::numeric_limits<long double>::min());
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  std::numeric_limits<double>::max());
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  1e-500L);
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  std::numeric_limits<long double>::min());
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  std::numeric_limits<double>::max());
     
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log, -std::numeric_limits<long double>::infinity());
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  std::numeric_limits<long double>::infinity());
-    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  std::numeric_limits<long double>::quiet_NaN());
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log, -std::numeric_limits<long double>::infinity());
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  std::numeric_limits<long double>::infinity());
+    GCEM_TEST_COMPARE_VALS(gcem::log, std::log,  std::numeric_limits<long double>::quiet_NaN());
 
     //
 

@@ -101,6 +101,9 @@ fabsl:
 factorial:
 	$(GCEM_MAKE_CALL)
 
+find_exponent:
+	$(GCEM_MAKE_CALL)
+
 fmod:
 	$(GCEM_MAKE_CALL)
 
@@ -138,6 +141,9 @@ log_binomial_coef:
 	$(GCEM_MAKE_CALL)
 
 log:
+	$(GCEM_MAKE_CALL)
+
+mantissa:
 	$(GCEM_MAKE_CALL)
 
 log1p:
