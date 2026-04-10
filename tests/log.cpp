@@ -31,6 +31,7 @@ int main()
 
     //
 
+    GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  0.1L);
     GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  0.5L);
     GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  0.00199900000000000208L);
     GCEM_TEST_COMPARE_VALS(gcem::log,std::log,  1.0L);
