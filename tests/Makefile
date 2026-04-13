@@ -11,9 +11,13 @@ else
 endif
 
 ifneq (,$(findstring clang,$(CXX)))
-	OPT_FLAGS = -g -O0 -Wall -Wextra --coverage -fno-inline
+	OPT_FLAGS = -g -O0 -Wall -Wextra -fno-inline
 else
-	OPT_FLAGS = -g -O0 -Wall -Wextra --coverage -fno-inline -fno-inline-small-functions -fno-default-inline
+	OPT_FLAGS = -g -O0 -Wall -Wextra -fno-inline -fno-inline-small-functions -fno-default-inline
+endif
+
+ifneq (,$(COVERAGE))
+	OPT_FLAGS += --coverage
 endif
 
 ifneq ($(TRAVIS_CLANG_BUILD),)
