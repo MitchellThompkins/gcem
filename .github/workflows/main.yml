@@ -4,129 +4,122 @@
 
 name: CI
 
-on: [push, pull_request, release]
+on:
+  push:
+  pull_request:
+  release:
+  schedule:
+    - cron: '0 0 * * 1'  # Every Monday at midnight UTC
 
 jobs:
-  build:
+  build-linux:
     name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+    runs-on: ubuntu-latest
+    container: ghcr.io/mitchellthompkins/gcem/ci:eb24b0547d0f
 
     strategy:
       fail-fast: false
       matrix:
-        config: 
+        config:
         - {
-            name: "ubuntu_latest_gcc_cxx11",
-            os: ubuntu-latest,
+            name: "gcc12_cxx11",
             build_type: "Release",
-            cc: "gcc",
-            cxx: "g++",
+            cc: "gcc-12",
+            cxx: "g++-12",
             cxxstd: "11"
           }
         - {
-            name: "ubuntu_latest_gcc_cxx11_coverage",
-            os: ubuntu-latest,
+            name: "gcc12_cxx11_coverage",
             build_type: "Coverage",
-            cc: "gcc",
-            cxx: "g++",
+            cc: "gcc-12",
+            cxx: "g++-12",
             cxxstd: "11"
           }
         - {
-            name: "ubuntu_latest_gcc9_cxx14",
-            os: ubuntu-latest,
+            name: "gcc9_cxx14",
             build_type: "Release",
             cc: "gcc-9",
             cxx: "g++-9",
             cxxstd: "14"
           }
         - {
-            name: "ubuntu_latest_gcc10_cxx14",
-            os: ubuntu-latest,
+            name: "gcc10_cxx14",
             build_type: "Release",
             cc: "gcc-10",
             cxx: "g++-10",
             cxxstd: "14"
           }
         - {
-            name: "ubuntu_latest_gcc11_cxx17",
-            os: ubuntu-latest,
+            name: "gcc11_cxx17",
             build_type: "Release",
             cc: "gcc-11",
             cxx: "g++-11",
             cxxstd: "17"
           }
         - {
-            name: "ubuntu_latest_gcc11_cxx20",
-            os: ubuntu-latest,
+            name: "gcc11_cxx20",
             build_type: "Release",
             cc: "gcc-11",
             cxx: "g++-11",
             cxxstd: "20"
           }
         - {
-            name: "ubuntu_latest_clang11_cxx11",
-            os: ubuntu-latest,
+            name: "clang11_cxx11",
             build_type: "Release",
             cc: "clang-11",
             cxx: "clang++-11",
             cxxstd: "11"
           }
         - {
-            name: "ubuntu_latest_clang11_cxx14",
-            os: ubuntu-latest,
+            name: "clang11_cxx14",
             build_type: "Release",
             cc: "clang-11",
             cxx: "clang++-11",
             cxxstd: "14"
           }
         - {
-            name: "ubuntu_latest_clang12_cxx14",
-            os: ubuntu-latest,
+            name: "clang12_cxx14",
             build_type: "Release",
             cc: "clang-12",
             cxx: "clang++-12",
             cxxstd: "14"
           }
         - {
-            name: "ubuntu22_clang13_cxx17",
-            os: ubuntu-22.04,
+            name: "clang13_cxx17",
             build_type: "Release",
             cc: "clang-13",
             cxx: "clang++-13",
             cxxstd: "17"
           }
         - {
-            name: "ubuntu22_clang14_cxx20",
-            os: ubuntu-22.04,
+            name: "clang14_cxx20",
             build_type: "Release",
             cc: "clang-14",
             cxx: "clang++-14",
             cxxstd: "20"
           }
         - {
-            name: "macos_latest_clang_cxx11",
-            os: macos-latest,
+            name: "gcc13_cxx23",
             build_type: "Release",
-            cc: "clang",
-            cxx: "clang++",
-            cxxstd: "11"
+            cc: "gcc-13",
+            cxx: "g++-13",
+            cxxstd: "23"
+          }
+        - {
+            name: "clang16_cxx23",
+            build_type: "Release",
+            cc: "clang-16",
+            cxx: "clang++-16",
+            cxxstd: "2b"
           }
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Print env
         run: |
           echo github.event.action: ${{ github.event.action }}
           echo github.event_name: ${{ github.event_name }}
-
-      - name: Install dependencies on ubuntu
-        if: startsWith(matrix.config.name, 'ubuntu')
-        run: |
-          sudo apt-get update
-          sudo apt-get install ${{ matrix.config.cc }} ${{ matrix.config.cxx }}
-          ${{ matrix.config.cc }} --version
-          echo "CXXT=${{ matrix.config.cxxstd }}" >> $GITHUB_ENV
 
       - name: Tests
         shell: bash
@@ -135,24 +128,52 @@ jobs:
           export CC=${{ matrix.config.cc }}
           export CXX=${{ matrix.config.cxx }}
           export GCEM_CXX_STD="-std=c++${{ matrix.config.cxxstd }}"
-          echo "Testing CXXT: ${CXXT}"
-          echo "Testing env.CXXT: ${{ env.CXXT }}"
+          export COVERAGE=${{ matrix.config.build_type == 'Coverage' && '1' || '' }}
           make
           ./run_tests
 
       - name: Coverage
-        if: startsWith(matrix.config.build_type, 'Coverage')
+        if: matrix.config.build_type == 'Coverage'
         shell: bash
         working-directory: tests
         run: |
-          export SHOULD_RUN_COVERAGE="y"
-          ./cov_check
-          cd ..
-          curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM
-          curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM.sig
-          gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
-          shasum -a 256 -c codecov.SHA256SUM
-          chmod +x codecov
-          ./codecov
+          CC="${{ matrix.config.cc }}"
+          lcov --gcov-tool "${CC/gcc/gcov}" --directory . --capture --output-file coverage.info
+
+      - name: Upload coverage to Codecov
+        if: matrix.config.build_type == 'Coverage'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          name: gcem
+          files: ${{ github.workspace }}/tests/coverage.info
+          verbose: true
+
+  build-macos:
+    name: macos_latest_clang_cxx${{ matrix.cxxstd }}
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        cxxstd: ["11", "14", "17", "20", "23"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Print env
+        run: |
+          echo github.event.action: ${{ github.event.action }}
+          echo github.event_name: ${{ github.event_name }}
+
+      - name: Tests
+        shell: bash
+        working-directory: tests
+        run: |
+          export CC=clang
+          export CXX=clang++
+          export GCEM_CXX_STD="-std=c++${{ matrix.cxxstd }}"
+          make clean
+          make
+          ./run_tests
