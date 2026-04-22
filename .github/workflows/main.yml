@@ -121,7 +121,7 @@ jobs:
           echo github.event.action: ${{ github.event.action }}
           echo github.event_name: ${{ github.event_name }}
 
-      - name: Tests
+      - name: Tests (stdlib)
         shell: bash
         working-directory: tests
         run: |
@@ -129,7 +129,21 @@ jobs:
           export CXX=${{ matrix.config.cxx }}
           export GCEM_CXX_STD="-std=c++${{ matrix.config.cxxstd }}"
           export COVERAGE=${{ matrix.config.build_type == 'Coverage' && '1' || '' }}
+          make clean
           make
+          ./run_tests
+
+      - name: Tests (builtin traits / no stdlib)
+        # Skipped for Coverage builds: coverage is already captured by the stdlib run above.
+        if: matrix.config.build_type != 'Coverage'
+        shell: bash
+        working-directory: tests
+        run: |
+          export CC=${{ matrix.config.cc }}
+          export CXX=${{ matrix.config.cxx }}
+          export GCEM_CXX_STD="-std=c++${{ matrix.config.cxxstd }}"
+          make clean
+          GCEM_TRAITS_FLAGS="-DGCEM_TRAITS_BUILTIN" make
           ./run_tests
 
       - name: Coverage
@@ -167,7 +181,7 @@ jobs:
           echo github.event.action: ${{ github.event.action }}
           echo github.event_name: ${{ github.event_name }}
 
-      - name: Tests
+      - name: Tests (stdlib)
         shell: bash
         working-directory: tests
         run: |
@@ -176,4 +190,15 @@ jobs:
           export GCEM_CXX_STD="-std=c++${{ matrix.cxxstd }}"
           make clean
           make
+          ./run_tests
+
+      - name: Tests (builtin traits / no stdlib)
+        shell: bash
+        working-directory: tests
+        run: |
+          export CC=clang
+          export CXX=clang++
+          export GCEM_CXX_STD="-std=c++${{ matrix.cxxstd }}"
+          make clean
+          GCEM_TRAITS_FLAGS="-DGCEM_TRAITS_BUILTIN" make
           ./run_tests

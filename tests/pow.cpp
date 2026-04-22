@@ -38,6 +38,10 @@ int main()
     // int versions
     GCEM_TEST_COMPARE_VALS(gcem::pow,std::pow, 0.5L,  2L);
     GCEM_TEST_COMPARE_VALS(gcem::pow,std::pow, 41.5L, 7L);
+
+    // sub-int exponent types (exercises gcem_limits<short>, gcem_limits<signed char>)
+    GCEM_TEST_COMPARE_VALS(gcem::pow,std::pow, 2.0L, short{3});
+    GCEM_TEST_COMPARE_VALS(gcem::pow,std::pow, 2.0L, static_cast<signed char>(4));
     
     GCEM_TEST_COMPARE_VALS(gcem::pow,std::pow,  std::numeric_limits<long double>::quiet_NaN(), 2);
     GCEM_TEST_COMPARE_VALS(gcem::pow,std::pow,  2, std::numeric_limits<long double>::quiet_NaN());

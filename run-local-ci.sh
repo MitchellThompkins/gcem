@@ -34,15 +34,17 @@ for entry in "${MATRIX[@]}"; do
 
   coverage=$([[ "$build_type" == "Coverage" ]] && echo "1" || echo "")
 
-  if docker run --rm -v "${REPO}:/src" -w /src/tests "$IMAGE" bash -c "
-    export CC=$cc
-    export CXX=$cxx
-    export GCEM_CXX_STD=-std=c++$cxxstd
-    export COVERAGE=$coverage
-    make clean
-    make
-    ./run_tests
-  "; then
+  run_stdlib="
+    export CC=$cc CXX=$cxx GCEM_CXX_STD=-std=c++$cxxstd COVERAGE=$coverage
+    make clean && make && ./run_tests
+  "
+  run_builtin="
+    export CC=$cc CXX=$cxx GCEM_CXX_STD=-std=c++$cxxstd
+    make clean && GCEM_TRAITS_FLAGS=-DGCEM_TRAITS_BUILTIN make && ./run_tests
+  "
+
+  if docker run --rm -v "${REPO}:/src" -w /src/tests "$IMAGE" bash -c "$run_stdlib" \
+  && { [[ "$build_type" == "Coverage" ]] || docker run --rm -v "${REPO}:/src" -w /src/tests "$IMAGE" bash -c "$run_builtin"; }; then
     PASS+=("$name")
   else
     FAIL+=("$name")
