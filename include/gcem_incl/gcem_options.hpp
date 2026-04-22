@@ -18,11 +18,9 @@
   ##
   ################################################################################*/
 
-#include <cstddef>      // size_t
-#include <limits>
-#include <type_traits>
-
-// undef some functions from math.h
+// undef some functions from math.h before including the trait headers so that
+// any platform macros already active do not mangle member function declarations
+// (e.g. gcem_limits<T>::min() / ::max()) or the <limits> include in stdlib mode.
 // see issue #29
 
 #ifdef abs
@@ -44,6 +42,9 @@
 #ifdef signbit
     #undef signbit
 #endif
+
+#include "gcem_type_traits.hpp"
+#include "gcem_limits.hpp"
 
 //
 // version
@@ -71,13 +72,13 @@ namespace gcem
     using llint_t = long long int;
 
     template<class T>
-    using GCLIM = std::numeric_limits<T>;
+    using GCLIM = gcem_limits<T>;
 
     template<typename T>
-    using return_t = typename std::conditional<std::is_integral<T>::value,double,T>::type;
+    using return_t = typename conditional<is_integral<T>::value,double,T>::type;
 
     template<typename ...T>
-    using common_t = typename std::common_type<T...>::type;
+    using common_t = typename common_type<T...>::type;
 
     template<typename ...T>
     using common_return_t = return_t<common_t<T...>>;

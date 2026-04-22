@@ -83,5 +83,11 @@ To build the full test suite:
     git clone -b master --single-branch https://github.com/kthohr/gcem ./gcem
     # compile tests
     cd ./gcem/tests
+
+    # default mode: uses <limits> and <type_traits> from the hosted stdlib
     make
+    ./run_tests
+
+    # builtin mode: self-contained, no stdlib required (GCC, Clang, and modern MSVC)
+    make GCEM_TRAITS_FLAGS="-DGCEM_TRAITS_BUILTIN"
     ./run_tests
